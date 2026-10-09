@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matchmaker – Joga Bonito</title>
+  <meta name="description" content="Genera squadre bilanciate e modifica le formazioni trascinando i giocatori sul campo." />
+  <meta name="theme-color" content="#0c0e0b" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500;600;700&family=Outfit:wght@500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+  <nav class="nav" aria-label="Principale">
+    <a href="/" class="nav__logo">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="12.5"/><path d="M16 10.4l4.9 3.6-1.9 5.8h-6l-1.9-5.8z"/><path d="M16 3.5v6.9M20.9 14l6.4-2.1M19 19.8l3.9 5.4M13 19.8l-3.9 5.4M11.1 14L4.7 11.9"/></svg>
+      <span>Calcetto<b>Ez</b></span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/players.html">Giocatori</a></li>
+      <li><a href="/chemistry.html">Intesa</a></li>
+      <li><a href="/matchmaker.html" class="active" aria-current="page">Matchmaker</a></li>
+      <li><a href="/report.html">Report</a></li>
+    </ul>
+  </nav>
+
+  <main id="main" class="page-wrapper">
+    <header class="page-header">
+      <div>
+        <h1 class="page-header__title">Matchmaker</h1>
+        <p class="page-header__sub">Genera squadre bilanciate, poi sistemale a mano: l'algoritmo aiuta, l'ultima parola è tua.</p>
+      </div>
+    </header>
+
+    <!-- STEP 1: selezione -->
+    <section class="section" aria-label="Selezione giocatori">
+      <div class="captain-step">
+        <h2 class="captain-step__title">Capitani fissi</h2>
+        <p class="captain-step__hint">Opzionale. I due capitani finiscono in squadre diverse e l'algoritmo costruisce attorno a loro.</p>
+        <div class="captain-slots">
+          <div class="captain-slot captain-slot--a" id="captain-slot-a">
+            <span class="team-dot"></span>
+            <div class="captain-slot__info">
+              <div class="captain-slot__name">Nessun capitano A</div>
+              <div class="captain-slot__role">Premi "Cap A" su un giocatore</div>
+            </div>
+          </div>
+          <div class="captain-slot captain-slot--b" id="captain-slot-b">
+            <span class="team-dot team-dot--b"></span>
+            <div class="captain-slot__info">
+              <div class="captain-slot__name">Nessun capitano B</div>
+              <div class="captain-slot__role">Premi "Cap B" su un giocatore</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="matchmaker-toolbar">
+        <div class="search-wrap">
+          <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span>
+          <input id="player-search" class="input search-input" type="search" placeholder="Cerca giocatore" autocomplete="off" aria-label="Cerca giocatore" />
+        </div>
+        <span id="sel-count" aria-live="polite">0 selezionati</span>
+        <button id="btn-autoselect" class="btn btn--secondary btn--sm" type="button">Auto-seleziona presenti</button>
+        <button id="btn-clear-sel"  class="btn btn--secondary btn--sm" type="button">Azzera</button>
+      </div>
+      <p class="matchmaker-help">
+        Ordinati per partite giocate. Tocca una card per selezionare: serve un numero <strong>pari ≥ 10</strong>.
+      </p>
+      <div id="player-checkbox-list" class="pgrid" role="group" aria-label="Giocatori">
+        <span class="skeleton skeleton--tile"></span>
+        <span class="skeleton skeleton--tile"></span>
+        <span class="skeleton skeleton--tile"></span>
+        <span class="skeleton skeleton--tile"></span>
+        <span class="skeleton skeleton--tile"></span>
+        <span class="skeleton skeleton--tile"></span>
+      </div>
+      <div class="btn-group">
+        <button id="btn-generate" class="btn btn--primary btn--lg" type="button" disabled>Genera squadre</button>
+        <a href="/report.html" class="btn btn--secondary">Vai al report</a>
+      </div>
+    </section>
+
+    <!-- STEP 2: editor squadre -->
+    <section id="teams-section" class="section hidden" aria-label="Squadre">
+      <div class="teams-editor-toolbar">
+        <h2 class="teams-editor-toolbar__title">Squadre</h2>
+        <span id="sa-energy" class="energy-tag"></span>
+        <div class="spacer"></div>
+        <button id="btn-export-img" class="btn btn--secondary" type="button" title="Scarica la formazione come immagine PNG">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>
+          Scarica immagine
+        </button>
+        <button id="btn-share-img" class="btn btn--secondary hidden" type="button" title="Condividi la formazione (WhatsApp, Telegram…)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M8 7.5L12 3.5l4 4"/><path d="M6 11H5.5A1.5 1.5 0 004 12.5v6A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5v-6a1.5 1.5 0 00-1.5-1.5H18"/></svg>
+          Condividi
+        </button>
+        <button id="btn-reset-teams" class="btn btn--secondary" type="button">Reset</button>
+        <button id="btn-regen"       class="btn btn--secondary" type="button">Rigenera</button>
+        <a href="/report.html" id="btn-confirm" class="btn btn--success">Conferma e vai al report</a>
+      </div>
+
+      <p class="pitch-hint">Trascina i giocatori dove vuoi sul campo. Rilascia un giocatore sopra uno dell'altra squadra per scambiarli.</p>
+
+      <!-- Bilanciamento -->
+      <div class="balance-meter">
+        <div class="balance-meter__header">
+          <span class="balance-meter__label">Bilanciamento</span>
+          <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+            <span id="swap-delta-badge" class="swap-delta swap-delta--same" style="display:none"></span>
+            <span id="balance-verdict" class="balance-verdict balance-verdict--ok">–</span>
+          </div>
+        </div>
+        <div class="balance-bar-wrap">
+          <span class="balance-team-label balance-team-label--a"><span class="team-dot"></span><strong id="str-a-bal">–</strong></span>
+          <div class="balance-track">
+            <div class="balance-fill-a" id="balance-fill-a" style="width:50%"></div>
+            <div class="balance-fill-b" id="balance-fill-b" style="width:50%"></div>
+          </div>
+          <span class="balance-team-label balance-team-label--b"><strong id="str-b-bal">–</strong><span class="team-dot team-dot--b"></span></span>
+        </div>
+        <div class="balance-scores">
+          <span>Squadra A</span>
+          <span id="balance-diff-text">Δ forza: –</span>
+          <span>Squadra B</span>
+        </div>
+      </div>
+
+      <!-- Scambio per selezione -->
+      <div id="swap-action-bar" class="swap-action-bar hidden">
+        <div>
+          <div class="swap-action-bar__info" id="swap-selected-info">Selezionato: –</div>
+          <div class="swap-action-bar__sub">Scegli un giocatore dell'altra squadra per scambiarlo, oppure annulla</div>
+        </div>
+        <button id="btn-cancel-swap" class="btn btn--secondary btn--sm" type="button">Annulla</button>
+      </div>
+
+      <!-- Scambi consigliati -->
+      <div id="suggestions-panel" class="suggestions-panel hidden">
+        <div class="suggestions-panel__title">Scambi consigliati</div>
+        <div id="suggestions-list"></div>
+      </div>
+
+      <!-- Campi -->
+      <div class="teams-result-grid">
+        <div class="team-result-card team-result-card--a">
+          <div class="team-result-header">
+            <span><span class="team-dot"></span>Squadra A</span>
+            <span>Forza <strong id="str-a">–</strong></span>
+          </div>
+          <div id="team-a-panel" class="team-panel"></div>
+        </div>
+        <div class="team-result-card team-result-card--b">
+          <div class="team-result-header">
+            <span><span class="team-dot team-dot--b"></span>Squadra B</span>
+            <span>Forza <strong id="str-b">–</strong></span>
+          </div>
+          <div id="team-b-panel" class="team-panel"></div>
+        </div>
+      </div>
+
+      <div class="ovr-summary">
+        <div class="ovr-summary__item">
+          <div class="ovr-summary__label">Squadra A</div>
+          <div class="ovr-summary__value" id="str-a-val">–</div>
+        </div>
+        <span id="ovr-diff" class="ovr-diff ovr-diff--ok">Δ forza: –</span>
+        <div class="ovr-summary__item">
+          <div class="ovr-summary__label">Squadra B</div>
+          <div class="ovr-summary__value" id="str-b-val">–</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Conferma scambio capitano -->
+  <div id="captain-confirm-overlay" class="swap-confirm-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="captain-confirm-title">
+    <div class="swap-confirm-box">
+      <h3 id="captain-confirm-title">Scambio capitano</h3>
+      <p id="captain-confirm-text">Questo giocatore è il capitano. Vuoi procedere con lo scambio?</p>
+      <div class="swap-confirm-btns">
+        <button id="captain-confirm-cancel" class="btn btn--secondary" type="button">Annulla</button>
+        <button id="captain-confirm-ok"     class="btn btn--primary" type="button">Scambia comunque</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/js/matchmaker.js"></script>
+</body>
+</html>
